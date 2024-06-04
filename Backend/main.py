@@ -51,25 +51,25 @@ def add_data():
     conn.close()
     return jsonify({'message': 'Data added successfully'})
 
-@app.route('/data/<int:index>', methods=['PUT'])
-def update_data(index):
+@app.route('/data/<string:column_name>', methods=['PUT'])
+def update_data(column_name):
     conn = get_db_connection()
     cursor = conn.cursor()
     data = request.get_json()
     set_clause = ', '.join([f"{column} = ?" for column in data.keys()])
-    values_list = list(data.values()) + [index]
-    query = f"UPDATE dbo.GW_1_P10_HR_2024_Ref SET {set_clause} ORDER BY (SELECT NULL) OFFSET ? ROWS FETCH NEXT 1 ROWS ONLY"
+    values_list = list(data.values()) + [column_name]
+    query = f"UPDATE dbo.GW_1_P10_HR_2024_Ref SET {set_clause} WHERE columnName = ?"
     cursor.execute(query, values_list)
     conn.commit()
     conn.close()
     return jsonify({'message': 'Data updated successfully'})
 
-@app.route('/data/<int:index>', methods=['DELETE'])
-def delete_data(index):
+@app.route('/data/<string:column_name>', methods=['DELETE'])
+def delete_data(column_name):
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = f"DELETE FROM dbo.GW_1_P10_HR_2024_Ref ORDER BY (SELECT NULL) OFFSET ? ROWS FETCH NEXT 1 ROWS ONLY"
-    cursor.execute(query, [index])
+    query = f"DELETE FROM dbo.GW_1_P10_HR_2024_Ref WHERE columnName = ?"
+    cursor.execute(query, [column_name])
     conn.commit()
     conn.close()
     return jsonify({'message': 'Data deleted successfully'})
