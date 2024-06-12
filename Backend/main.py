@@ -27,17 +27,19 @@ def get_db_connection():
     conn = pyodbc.connect(conn_str)
     return conn
 
-@app.route('/data', methods=['GET'])
+
+#gw_2 table in use
+@app.route('/data', methods=['GET'])  #this endpoint will fetch all the data from the table/database
 def get_data():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM dbo.GW_1_P10_HR_2024_Ref")
+    cursor.execute("SELECT * FROM dbo.GW_2_P10_HR_2024")
     rows = cursor.fetchall()
     conn.close()
     data = [dict(zip([column[0] for column in cursor.description], row)) for row in rows]
     return jsonify(data)
 
-@app.route('/data', methods=['POST'])
+@app.route('/data', methods=['POST']) #this endpoint will add or create a new row into database
 def add_data():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -51,7 +53,7 @@ def add_data():
     conn.close()
     return jsonify({'message': 'Data added successfully'})
 
-@app.route('/data/<string:column_name>', methods=['PUT'])
+@app.route('/data/<string:column_name>', methods=['PUT'])  #this endpoint will update any 
 def update_data(column_name):
     conn = get_db_connection()
     cursor = conn.cursor()
