@@ -2,3 +2,5 @@
 /node_modules
 /dump
 .env
+dummy.py
+error.txt
