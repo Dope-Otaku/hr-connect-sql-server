@@ -1,5 +1,3 @@
-#only for test
-
 import pyodbc
 
 import os
@@ -24,36 +22,34 @@ conn_str = (
     f"DATABASE={config['database']};"
     f"UID={config['username']};"
     f"PWD={config['password']};"
-    "trusted_connection=yes"  # Add this line
+    "trusted_connection=yes"
 )
 
-conn = None
-
-try:
-    # Establish the connection
+def delete_ids():
     conn = pyodbc.connect(conn_str)
-    print("Connection successful!")
-
-    # Create a cursor object
     cursor = conn.cursor()
 
-    # Define and execute the query
-    query = "SELECT * FROM dbo.GW_1_P10_HR_2024_Ref"
-    # query = "SELECT * FROM dbo.ConnectedPLCs"
-    cursor.execute(query)
+    try:
+        # IDs to delete
+        # ids_to_delete = [28, 29, 30]
+        ids_to_delete = [25, 24]
 
-    # Fetch all rows from the executed query
-    rows = cursor.fetchall()
+        # Delete the specified IDs
+        for id in ids_to_delete:
+            cursor.execute("DELETE FROM GW_2_P10_HR_2024_old WHERE Id = ?", (id,))
+            print(f"Deleted entries with Id: {id}")
 
-    # Print the fetched rows
-    for row in rows:
-        print(row)
+        # Commit the changes
+        conn.commit()
+        print("Deletion completed successfully.")
 
-except pyodbc.Error as err:
-    print("Error: ", err)
+    except Exception as e:
+        conn.rollback()
+        print(f"An error occurred: {e}")
 
-finally:
-    # Close the connection
-    if conn:
+    finally:
+        cursor.close()
         conn.close()
-        print("Connection closed.")
+
+if __name__ == "__main__":
+    delete_ids()

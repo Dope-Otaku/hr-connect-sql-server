@@ -1,0 +1,14 @@
+datatable in python !
+
+R&D tables 
+production count calc start
+add data post request
+
+response of datalog catching!
+
+
+dur mai kitna hour elapse hua hai wo calculate hoga
+
+dtabase mai update krna padega !
+
+DUr ka calculation baaki hai

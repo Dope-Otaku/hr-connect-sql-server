@@ -1,15 +1,20 @@
 from flask import Flask, jsonify, request
 import pyodbc
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 # Define the database configuration
 config = {
-    'driver': 'SQL Server',
-    'server': 'localhost',
-    'database': 'ITP_1482',
-    'username': 'RAJ',
-    'password': 'root@123',
-    'port': 1433
+    'driver': os.getenv('DRIVER'),
+    'server': os.getenv('SERVER'),
+    'database': os.getenv('DATABASE'),
+    'username': os.getenv('USERNAME'),
+    'password': os.getenv('PASSWORD'),
+    'port': os.getenv('PORT')
 }
+
 
 # Create a connection string
 conn_str = (
@@ -18,7 +23,7 @@ conn_str = (
     f"DATABASE={config['database']};"
     f"UID={config['username']};"
     f"PWD={config['password']};"
-    "trusted_connection=yes"
+    # "trusted_connection=yes"0
 )
 
 app = Flask(__name__)
