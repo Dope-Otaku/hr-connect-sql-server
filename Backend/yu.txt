@@ -1,3 +1,6 @@
 1. we need to create a function where it will take param id as parameters
 
 2. the structure will be like this
+
+
+def param_combi(paramID)
