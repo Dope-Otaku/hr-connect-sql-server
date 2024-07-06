@@ -4,6 +4,9 @@
 
 
 def param_combi(paramID):
-    pass
+    fetch = connect.database
+    output = fetch[-].all
+    return output
 
 3. in the above function we will take paramID as arguments and fetch data from table using this id
+
