@@ -6,4 +6,4 @@
 def param_combi(paramID):
     pass
 
-3. 
+3. in the above function we will take paramID as arguments and fetch data from table using this id
