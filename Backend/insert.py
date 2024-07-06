@@ -252,31 +252,52 @@ def insert_or_update_data():
         cursor.close()
         conn.close()
 
+# def run_with_timer():
+#     while True:
+#         current_time = datetime.now()
+        
+#         # Run the first time
+#         print(f"Running at {current_time}")
+#         insert_or_update_data()
+        
+#         # Calculate the time for the second run (20 minutes later)
+#         second_run_time = current_time + timedelta(minutes=2)
+        
+#         # Sleep until it's time for the second run
+#         sleep_time = (second_run_time - datetime.now()).total_seconds()
+#         if sleep_time > 0:
+#             print(f"Sleeping for {sleep_time} seconds until {second_run_time}")
+#             time.sleep(sleep_time)
+        
+#         # Run the second time
+#         print(f"Running at {datetime.now()}")
+#         insert_or_update_data()
+        
+#         # Calculate the start of the next hour
+#         next_hour = current_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+        
+#         # Sleep until the start of the next hour
+#         sleep_time = (next_hour - datetime.now()).total_seconds()
+#         if sleep_time > 0:
+#             print(f"Sleeping for {sleep_time} seconds until {next_hour}")
+#             time.sleep(sleep_time)
+
 def run_with_timer():
     while True:
         current_time = datetime.now()
         
-        # Run the first time
-        print(f"Running at {current_time}")
-        insert_or_update_data()
-        
-        # Calculate the time for the second run (20 minutes later)
-        second_run_time = current_time + timedelta(minutes=5)
-        
-        # Sleep until it's time for the second run
-        sleep_time = (second_run_time - datetime.now()).total_seconds()
-        if sleep_time > 0:
-            print(f"Sleeping for {sleep_time} seconds until {second_run_time}")
-            time.sleep(sleep_time)
-        
-        # Run the second time
-        print(f"Running at {datetime.now()}")
-        insert_or_update_data()
-        
         # Calculate the start of the next hour
         next_hour = current_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
         
-        # Sleep until the start of the next hour
+        # Run and update until the next hour
+        while datetime.now() < next_hour:
+            print(f"Running at {datetime.now()}")
+            insert_or_update_data()
+            
+            # Sleep for 2 minutes
+            time.sleep(120)  # 120 seconds = 2 minutes
+        
+        # Calculate sleep time until the start of the next hour
         sleep_time = (next_hour - datetime.now()).total_seconds()
         if sleep_time > 0:
             print(f"Sleeping for {sleep_time} seconds until {next_hour}")
