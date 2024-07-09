@@ -159,3 +159,11 @@ if __name__ == "__main__":
             print("No object values found or an error occurred.")
     else:
         print("No parameter results found or an error occurred.")
+
+
+
+
+#         SELECT TOP (3) [ParameterID]
+#       ,[Value]
+#       ,[TimeStamp]
+#   FROM [ITP_1482].[dbo].[GW_2-B5] where parameterID in (4,5,6) order by TimeStamp desc
