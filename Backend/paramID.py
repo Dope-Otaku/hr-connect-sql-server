@@ -134,7 +134,7 @@ def cal_for_table(paramId):
 
 
 if __name__ == "__main__":
-    paramID = 2  # Replace with the desired parameter ID
+    paramID = 1  # Replace with the desired parameter ID
     
     cal_for_table(paramId=paramID)
 
