@@ -124,8 +124,9 @@ def cal_for_table(paramId):
     yp = (int(paramId) - 1)
 
     calculation = cons_start + (xp * yp)
-    print(f"calculation: {calculation}")
 
+    cons_end = calculation   #these are yet to be  dynamic
+    print(f"calculation: {calculation}")
 
     return (calculation)
 
