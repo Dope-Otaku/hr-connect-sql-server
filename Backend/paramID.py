@@ -129,7 +129,8 @@ def cal_for_table(paramId):
 
     return (calculation)
 
-
+def function_for_insertion():
+    pass
 
 
 
