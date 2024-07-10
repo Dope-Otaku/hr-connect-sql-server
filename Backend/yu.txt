@@ -11,3 +11,7 @@ def param_combi(paramID):
 3. in the above function we will take paramID as arguments and fetch data from table using this id
 
 4. the result should be stored in seperate variable and should be returned
+
+5. create a function which converts the data into cateogary wise
+
+6. create another function which inserts the data but checks the table number
