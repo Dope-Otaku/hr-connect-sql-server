@@ -119,16 +119,19 @@ def get_object_values(param_results, object_value_table):
 
 
 def cal_for_table(paramId):
-    cons_start = 50   #these are yet to be  dynamic
-    xp = 6   #these are yet to be  dynamic
+    #for parameter 1
+    cons_start = 6   #these are yet to be  dynamic
+    const_end = 55
+    xp = 50   #these are yet to be  dynamic
     yp = (int(paramId) - 1)
 
-    calculation = cons_start + (xp * yp)
+    new_start = cons_start + (xp * yp)
 
-    cons_end = calculation   #these are yet to be  dynamic
-    print(f"calculation: {calculation}")
+    # cons_end = new_start   #these are yet to be  dynamic
+    print(f"calculation: {new_start} to {const_end}")
+    # print(f"calculation: {calculation}")
 
-    return (calculation)
+    return (new_start)
 
 def function_for_insertion():
     pass
