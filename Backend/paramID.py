@@ -149,7 +149,7 @@ def cal_for_table(paramId):
     start_formatted = f"C{new_start:03d}"
     end_formatted = f"C{new_end:03d}"
 
-    print(f"calculation: {start_formatted} to {end_formatted}")
+    # print(f"calculation: {start_formatted} to {end_formatted}")
 
     return (start_formatted, end_formatted)
 
@@ -171,12 +171,18 @@ def cal_for_table(paramId):
 
 def print_range_with_values(start, end, object_values):
     # Always print C001 to C005 with None values
-    for i in range(0, 1):
-        formatted = f"C{i:03d}"
-        print(f"{formatted}: None")
+    # for i in range(1, 6):
+    #     formatted = f"C{i:03d}"
+    #     print(f"{formatted}: None")
 
     start_num = int(start[1:])
     end_num = int(end[1:])
+
+    # Print C001 to C005 only if the start is C006
+    if start_num == 6:
+        for i in range(1, 6):
+            formatted = f"C{i:03d}"
+            print(f"{formatted}: None")
     
     for i in range(start_num, end_num + 1):
         formatted = f"C{i:03d}"
