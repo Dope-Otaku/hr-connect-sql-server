@@ -118,20 +118,79 @@ def get_object_values(param_results, object_value_table):
             conn.close()
 
 
+# def cal_for_table(paramId):
+#     #for parameter 1
+#     cons_start = 6   #these are yet to be  dynamic
+#     const_end = 55
+#     xp = 50   #these are yet to be  dynamic
+#     yp = (int(paramId) - 1)
+
+#     new_start = cons_start + (xp * yp)
+#     new_end = const_end + (xp * yp)
+
+#     # cons_end = new_start   #these are yet to be  dynamic
+#     # print(f"calculation: {new_start} to {const_end}")
+#     print(f"calculation: C00{new_start} to C0{new_end}")
+#     # print(f"calculation: {calculation}")
+
+#     #for parameter 2
+
+#     return (new_start)
+
 def cal_for_table(paramId):
-    #for parameter 1
-    cons_start = 6   #these are yet to be  dynamic
+    cons_start = 6
     const_end = 55
-    xp = 50   #these are yet to be  dynamic
+    xp = 50
     yp = (int(paramId) - 1)
 
     new_start = cons_start + (xp * yp)
+    new_end = const_end + (xp * yp)
 
-    # cons_end = new_start   #these are yet to be  dynamic
-    print(f"calculation: {new_start} to {const_end}")
-    # print(f"calculation: {calculation}")
+    start_formatted = f"C{new_start:03d}"
+    end_formatted = f"C{new_end:03d}"
 
-    return (new_start)
+    print(f"calculation: {start_formatted} to {end_formatted}")
+
+    return (start_formatted, end_formatted)
+
+# def print_range_with_values(start, end, object_values):
+#     start_num = int(start[1:])
+#     end_num = int(end[1:])
+    
+#     for i in range(start_num, end_num + 1):
+#         formatted = f"C{i:03d}"
+        
+#         if i == start_num + 1:  # Second C-code (e.g., C007 for parameter 1)
+#             value = object_values[2]['Value'] if len(object_values) > 2 else None  # DOWNTIME
+#         elif i == start_num + 2:  # Third C-code (e.g., C008 for parameter 1)
+#             value = object_values[0]['Value'] if len(object_values) > 0 else None  # PRODUCT
+#         else:
+#             value = None
+        
+#         print(f"{formatted}: {value}")
+
+def print_range_with_values(start, end, object_values):
+    # Always print C001 to C005 with None values
+    for i in range(0, 1):
+        formatted = f"C{i:03d}"
+        print(f"{formatted}: None")
+
+    start_num = int(start[1:])
+    end_num = int(end[1:])
+    
+    for i in range(start_num, end_num + 1):
+        formatted = f"C{i:03d}"
+        
+        if i == start_num + 1:  # Second C-code (e.g., C007 for parameter 1)
+            value = object_values[2]['Value'] if len(object_values) > 2 else None  # DOWNTIME
+        elif i == start_num + 4:  # Third C-code (e.g., C008 for parameter 1)
+            value = object_values[0]['Value'] if len(object_values) > 0 else None  # PRODUCT
+        elif i == start_num + 2:  # Third C-code (e.g., C008 for parameter 1)
+            value = object_values[1]['Value'] if len(object_values) > 0 else None  # PRODUCT_Count
+        else:
+            value = None
+        
+        print(f"{formatted}: {value}")
 
 def function_for_insertion():
     pass
@@ -139,8 +198,11 @@ def function_for_insertion():
 
 
 if __name__ == "__main__":
-    paramID = 1  # Replace with the desired parameter ID
+    paramID = 2  # Replace with the desired parameter ID
     
+    start, end = cal_for_table(paramId=paramID)
+
+
     cal_for_table(paramId=paramID)
 
 
@@ -154,10 +216,14 @@ if __name__ == "__main__":
             # print(f"Object values for ParameterID {paramID}:")
             # for value in object_values:
             #     print(value)
-            print(f"\nValues for ParameterID {paramID}:")
-            names = ["PRODUCT", "PRODUCT_TYPE", "DOWNTIME"]
-            for name, value in zip(names, object_values):
-                print(f"{name:<15}: {value['Value']} (TimeStamp: {value['TimeStamp']})")
+            # print(f"\nValues for ParameterID {paramID}:")
+            # names = ["PRODUCT", "PRODUCT_TYPE", "DOWNTIME"]
+            # for name, value in zip(names, object_values):
+            #     print(f"{name:<15}: {value['Value']} (TimeStamp: {value['TimeStamp']})")
+
+            print("\nPrinting range of values with their corresponding values:")
+            print_range_with_values(start, end, object_values)
+            
         else:
             print("No object values found or an error occurred.")
     else:
