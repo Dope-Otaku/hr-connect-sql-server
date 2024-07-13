@@ -208,7 +208,7 @@ if __name__ == "__main__":
     #let's implement a logi for it loop for 9 times
 
     for i in range(1, 10):
-        print(f"we printing for {i} ID")
+        print(f"we inserting for {i} ID")
         paramID = i
 
         start, end = cal_for_table(paramId=paramID)
