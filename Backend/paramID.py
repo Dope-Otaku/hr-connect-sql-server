@@ -204,36 +204,48 @@ def function_for_insertion():
 
 
 if __name__ == "__main__":
-    paramID = 2  # Replace with the desired parameter ID
-    
-    start, end = cal_for_table(paramId=paramID)
+
+    #let's implement a logi for it loop for 9 times
+
+    for i in range(1, 10):
+        print(f"we printing for {i} ID")
+        paramID = i
+
+        start, end = cal_for_table(paramId=paramID)
 
 
-    cal_for_table(paramId=paramID)
+        cal_for_table(paramId=paramID)
 
 
 
-    param_results, object_value_table = param_combi(paramID)
-    
-    if param_results and object_value_table:
-        print(f"Using object value table: {object_value_table}")
-        object_values = get_object_values(param_results, object_value_table)
-        if object_values:
-            # print(f"Object values for ParameterID {paramID}:")
-            # for value in object_values:
-            #     print(value)
-            # print(f"\nValues for ParameterID {paramID}:")
-            # names = ["PRODUCT", "PRODUCT_TYPE", "DOWNTIME"]
-            # for name, value in zip(names, object_values):
-            #     print(f"{name:<15}: {value['Value']} (TimeStamp: {value['TimeStamp']})")
+        param_results, object_value_table = param_combi(paramID)
+        
+        if param_results and object_value_table:
+            print(f"Using object value table: {object_value_table}")
+            object_values = get_object_values(param_results, object_value_table)
+            if object_values:
+                # print(f"Object values for ParameterID {paramID}:")
+                # for value in object_values:
+                #     print(value)
+                # print(f"\nValues for ParameterID {paramID}:")
+                # names = ["PRODUCT", "PRODUCT_TYPE", "DOWNTIME"]
+                # for name, value in zip(names, object_values):
+                #     print(f"{name:<15}: {value['Value']} (TimeStamp: {value['TimeStamp']})")
 
-            print("\nPrinting range of values with their corresponding values:")
-            print_range_with_values(start, end, object_values)
-            
+                print("\nPrinting range of values with their corresponding values:")
+                print_range_with_values(start, end, object_values)
+                
+            else:
+                print("No object values found or an error occurred.")
         else:
-            print("No object values found or an error occurred.")
-    else:
-        print("No parameter results found or an error occurred.")
+            print("No parameter results found or an error occurred.")
+        
+
+
+
+    # paramID = 2  # Replace with the desired parameter ID
+    
+    
 
 
 
