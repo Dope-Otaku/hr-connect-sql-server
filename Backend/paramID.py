@@ -1,6 +1,7 @@
 import pyodbc
 from dotenv import load_dotenv
 import os
+import time
 
 # Load environment variables
 load_dotenv()
@@ -210,6 +211,12 @@ if __name__ == "__main__":
     for i in range(1, 10):
         print(f"we inserting for {i} ID")
         paramID = i
+
+        #let's implement a timer
+        if i == 1:
+            pass
+        else:
+            time.sleep(5)
 
         start, end = cal_for_table(paramId=paramID)
 
