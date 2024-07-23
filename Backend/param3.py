@@ -79,6 +79,53 @@ def param_combi(paramID):
             conn.close()
 
 
+# def get_object_values(param_results, object_value_table):
+#     try:
+#         conn = pyodbc.connect(conn_str)
+#         cursor = conn.cursor()
+
+#         object_values = []
+
+#         for item in param_results:
+#             unique_id = item['UniqueID']
+#             object_name = item['Object']
+
+#             # SQL query to fetch the latest value for the given UniqueID
+#             query = f"""
+#             SELECT TOP 3 Value, TimeStamp, ParameterID
+#             FROM [{object_value_table}]
+#             WHERE ParameterID in (select uniqueId from maintaglist where parameterId = ?)
+#             ORDER BY TimeStamp DESC
+#             """
+            
+#             cursor.execute(query, (unique_id,))
+#             row = cursor.fetchone()
+
+#             if row:
+#                 object_values.append({
+#                     'ParameterID': unique_id,
+#                     'Object': object_name,
+#                     'Value': row.Value,
+#                     'TimeStamp': row.TimeStamp
+#                 })
+#             else:
+#                 object_values.append({
+#                     'UniqueID': unique_id,
+#                     'Object': object_name,
+#                     'Value': None,
+#                     'TimeStamp': None
+#                 })
+
+#         return object_values
+
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+#         return None
+
+#     finally:
+#         if conn:
+#             conn.close()
+
 def get_object_values(param_results, object_value_table):
     try:
         conn = pyodbc.connect(conn_str)
@@ -90,11 +137,10 @@ def get_object_values(param_results, object_value_table):
             unique_id = item['UniqueID']
             object_name = item['Object']
 
-            # SQL query to fetch the latest value for the given UniqueID
             query = f"""
-            SELECT TOP 3 Value, TimeStamp, ParameterID
+            SELECT TOP 1 Value, TimeStamp, ParameterID
             FROM [{object_value_table}]
-            WHERE ParameterID in (select uniqueId from maintaglist where parameterId = ?)
+            WHERE ParameterID = ?
             ORDER BY TimeStamp DESC
             """
             
@@ -108,18 +154,15 @@ def get_object_values(param_results, object_value_table):
                     'Value': row.Value,
                     'TimeStamp': row.TimeStamp
                 })
+                print(f"Query result for {object_name} (UniqueID: {unique_id}):")
+                print(f"  Value: {row.Value}, TimeStamp: {row.TimeStamp}, ParameterID: {row.ParameterID}")
             else:
-                object_values.append({
-                    'UniqueID': unique_id,
-                    'Object': object_name,
-                    'Value': None,
-                    'TimeStamp': None
-                })
+                print(f"No data found for {object_name} (UniqueID: {unique_id})")
 
         return object_values
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred in get_object_values: {e}")
         return None
 
     finally:
@@ -345,6 +388,10 @@ def batch_insert_with_temp_table(param_ids):
         for param_id in param_ids:
             data = collect_data_for_param(param_id, cursor)
             
+            print(f"\nInserting data for param_id {param_id}:")
+            for row in data:
+                print(f"  {row[1]}: {row[2]}")
+            
             cursor.executemany("""
                 INSERT INTO #TempHRData (Id, ColumnName, Value)
                 VALUES (?, ?, ?)
@@ -363,6 +410,8 @@ def batch_insert_with_temp_table(param_ids):
     finally:
         cursor.close()
         conn.close()
+
+        
 #approach 2 with csv
 def bulk_insert_with_csv(param_ids):
     conn = pyodbc.connect(conn_str)
@@ -432,6 +481,58 @@ def process_param_id(param_id, conn_str):
         cursor.close()
         conn.close()
 
+# def collect_data_for_param(param_id, cursor):
+#     now = datetime.now()
+#     current_date = now.strftime("%Y-%m-%d")
+#     current_time = now.strftime("%H:%M")
+#     end_time = (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)).strftime("%H:%M")
+
+#     param_results, object_value_table = param_combi(param_id)
+#     print(param_results)
+#     object_values = get_object_values(param_results, object_value_table)
+
+#     # Create a dictionary to store values with default None
+#     values = {
+#         'DOWNTIME': None,
+#         'PRODUCT_TYPE': None,
+#         'PRODUCT': None
+#     }
+
+
+# #just for debugging 
+#     downtime = next((item['Value'] for item in object_values if item['Object'] == 'DOWNTIME'), None)
+#     product_type = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT_TYPE'), None)
+#     product_count = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT'), None)
+
+#     print("object_values:", object_values)
+#     print("downtime:", downtime)
+#     print("product_type:", product_type)
+#     print("product_count:", product_count)
+
+#     shift_name = get_shift_data(cursor, now.strftime("%H:%M"))
+
+#     cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
+#     max_id = cursor.fetchone()[0]
+#     new_id = (max_id or 0) + 1
+
+#     data = [
+#         (new_id, 'C001', f"{current_date} {now.strftime('%H:%M')}:00"),
+#         (new_id, 'C002', current_date),
+#         (new_id, 'C003', current_time),
+#         (new_id, 'C004', end_time),
+#         (new_id, 'C005', shift_name),
+#         (new_id, 'C006', '0'),
+#         (new_id, 'C007', downtime),
+#         (new_id, 'C008', product_type),
+#         (new_id, 'C009', '0'),
+#         (new_id, 'C010', product_count),
+#         (new_id, 'C011', 'TPM'),
+#         (new_id, 'C012', '0'),
+#         (new_id, 'C013', downtime)
+#     ]
+
+#     return data
+
 def collect_data_for_param(param_id, cursor):
     now = datetime.now()
     current_date = now.strftime("%Y-%m-%d")
@@ -439,19 +540,23 @@ def collect_data_for_param(param_id, cursor):
     end_time = (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)).strftime("%H:%M")
 
     param_results, object_value_table = param_combi(param_id)
-    print(param_results)
     object_values = get_object_values(param_results, object_value_table)
 
+    # Initialize variables
+    product_count = None
+    product_type = None
+    downtime = None
 
-#just for debugging 
-    downtime = next((item['Value'] for item in object_values if item['Object'] == 'DOWNTIME'), None)
-    product_type = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT_TYPE'), None)
-    product_count = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT'), None)
+    # Assign values based on their position in the list
+    if len(object_values) >= 3:
+        product_count = object_values[0]['Value']
+        product_type = object_values[1]['Value']
+        downtime = object_values[2]['Value']
 
-    print("object_values:", object_values)
-    print("downtime:", downtime)
-    print("product_type:", product_type)
-    print("product_count:", product_count)
+    # Print the values with their respective names
+    print(f"Product Count: {product_count}")
+    print(f"Product Type: {product_type}")
+    print(f"Downtime: {downtime}")
 
     shift_name = get_shift_data(cursor, now.strftime("%H:%M"))
 
@@ -466,18 +571,16 @@ def collect_data_for_param(param_id, cursor):
         (new_id, 'C004', end_time),
         (new_id, 'C005', shift_name),
         (new_id, 'C006', '0'),
-        (new_id, 'C007', downtime),
-        (new_id, 'C008', product_type),
+        (new_id, 'C007', str(downtime) if downtime is not None else None),
+        (new_id, 'C008', str(product_type) if product_type is not None else None),
         (new_id, 'C009', '0'),
-        (new_id, 'C010', product_count),
+        (new_id, 'C010', str(product_count) if product_count is not None else None),
         (new_id, 'C011', 'TPM'),
         (new_id, 'C012', '0'),
-        (new_id, 'C013', downtime)
+        (new_id, 'C013', str(downtime) if downtime is not None else None)
     ]
 
     return data
-
-
 
 if __name__ == "__main__":
     param_ids = range(1, 10)
