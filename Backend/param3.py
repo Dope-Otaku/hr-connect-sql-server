@@ -411,7 +411,7 @@ def batch_insert_with_temp_table(param_ids):
         cursor.close()
         conn.close()
 
-        
+
 #approach 2 with csv
 def bulk_insert_with_csv(param_ids):
     conn = pyodbc.connect(conn_str)
@@ -586,7 +586,7 @@ if __name__ == "__main__":
     param_ids = range(1, 10)
 
    
-
+    #currently this one works only the other two are not tested yet!
     print("Starting batch insert with temporary table...")
     start_time = time.time()
     batch_insert_with_temp_table(param_ids)
