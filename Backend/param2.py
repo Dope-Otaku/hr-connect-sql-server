@@ -330,8 +330,8 @@ if __name__ == "__main__":
         #let's implement a timer
         if i == 1:
             pass  #this will run in 5 dec delay
-        else:
-            time.sleep(5)
+        # else:
+        #     time.sleep(5)
 
         print(f"\nwe inserting for {i} ID")
         paramID = i

@@ -262,6 +262,8 @@ def insert_or_update_data(paramID, object_values):
         downtime = next((item['Value'] for item in object_values if item['Object'] == 'DOWNTIME'), None)
         product_type = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT_TYPE'), None)
         product_count = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT'), None)
+
+
         # Get dynamic shift data
         shift_name = get_shift_data(cursor, now.strftime("%H:%M"))
 
@@ -440,6 +442,8 @@ def collect_data_for_param(param_id, cursor):
     print(param_results)
     object_values = get_object_values(param_results, object_value_table)
 
+
+#just for debugging 
     downtime = next((item['Value'] for item in object_values if item['Object'] == 'DOWNTIME'), None)
     product_type = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT_TYPE'), None)
     product_count = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT'), None)
