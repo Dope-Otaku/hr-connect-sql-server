@@ -15,3 +15,154 @@ def param_combi(paramID):
 5. create a function which converts the data into cateogary wise
 
 6. create another function which inserts the data but checks the table number
+
+
+
+The batch insert with a temporary table reduces the number of network round-trips and leverages SQL Server's ability to efficiently insert data from one table to another.
+
+def batch_insert_with_temp_table(param_ids):
+    conn = pyodbc.connect(conn_str)
+    cursor = conn.cursor()
+    
+    try:
+        # Create a temporary table
+        cursor.execute("""
+            CREATE TABLE #TempHRData (
+                Id INT,
+                ColumnName VARCHAR(10),
+                Value VARCHAR(100)
+            )
+        """)
+        
+        for param_id in param_ids:
+            # Collect data for each param_id
+            data = collect_data_for_param(param_id)
+            
+            # Insert data into temporary table
+            cursor.executemany("""
+                INSERT INTO #TempHRData (Id, ColumnName, Value)
+                VALUES (?, ?, ?)
+            """, data)
+        
+        # Insert from temporary table to actual table
+        cursor.execute("""
+            INSERT INTO GW_2_P10_HR_2024_old (Id, ColumnName, Value)
+            SELECT * FROM #TempHRData
+        """)
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"An error occurred: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+def collect_data_for_param(param_id):
+    # Your existing logic to collect data for a param_id
+    # Return a list of tuples (Id, ColumnName, Value)
+    pass
+
+
+
+The bulk insert with CSV utilizes SQL Server's BULK INSERT capability, which can be very fast for large datasets.
+import csv
+import tempfile
+
+def bulk_insert_with_csv(param_ids):
+    conn = pyodbc.connect(conn_str)
+    cursor = conn.cursor()
+    
+    try:
+        # Create a temporary CSV file
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, newline='') as temp_file:
+            csv_writer = csv.writer(temp_file)
+            
+            for param_id in param_ids:
+                data = collect_data_for_param(param_id)
+                csv_writer.writerows(data)
+            
+            temp_file_path = temp_file.name
+        
+        # Bulk insert from CSV
+        cursor.execute(f"""
+            BULK INSERT GW_2_P10_HR_2024_old
+            FROM '{temp_file_path}'
+            WITH (
+                FIELDTERMINATOR = ',',
+                ROWTERMINATOR = '\\n',
+                FIRSTROW = 1
+            )
+        """)
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"An error occurred: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+        os.unlink(temp_file_path)  # Delete the temporary file
+
+def collect_data_for_param(param_id):
+    # Your existing logic to collect data for a param_id
+    # Return a list of lists [Id, ColumnName, Value]
+    pass
+
+
+
+--------------------------------------------------------
+
+arm gripper exercises
+
+5 exercises for 30 sec each and 10 secs rest in between!
+
+
+
+
+
+The asynchronous insert with multiprocessing parallelizes the data collection and insertion process, which can be beneficial if you have multiple cores available and the bottleneck is in data processing rather than database insertion.
+
+import multiprocessing
+from functools import partial
+
+def async_insert_with_multiprocessing(param_ids):
+    pool = multiprocessing.Pool()
+    
+    try:
+        # Use partial to pass the connection string to the worker function
+        worker_func = partial(process_param_id, conn_str=conn_str)
+        
+        # Map param_ids to worker processes
+        pool.map(worker_func, param_ids)
+    finally:
+        pool.close()
+        pool.join()
+
+def process_param_id(param_id, conn_str):
+    conn = pyodbc.connect(conn_str)
+    cursor = conn.cursor()
+    
+    try:
+        data = collect_data_for_param(param_id)
+        
+        cursor.executemany("""
+            INSERT INTO GW_2_P10_HR_2024_old (Id, ColumnName, Value)
+            VALUES (?, ?, ?)
+        """, data)
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"An error occurred for param_id {param_id}: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+def collect_data_for_param(param_id):
+    # Your existing logic to collect data for a param_id
+    # Return a list of tuples (Id, ColumnName, Value)
+    pass
+
+
+
