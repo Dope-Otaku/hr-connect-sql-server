@@ -190,7 +190,7 @@ def get_object_values(param_results, object_value_table):
 #     return (new_start)
 
 def cal_for_table(paramId):
-    cons_start = 6
+    cons_start = 1
     const_end = 55
     xp = 50
     yp = (int(paramId) - 1)
@@ -425,13 +425,25 @@ def batch_insert_with_temp_table(param_ids):
             )
         """)
         
+        # Get the maximum ID from the main table
+        cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
+        max_id = cursor.fetchone()[0]
+        new_id = (max_id or 0) + 1
+
+        print(f"Collecting data with ID: {new_id}")
+        
+        all_data = []
+        start_c_num = 1  # Start from C001
         for param_id in param_ids:
-            data = collect_data_for_param(param_id, cursor)
-            
-            cursor.executemany("""
-                INSERT INTO #TempHRData (Id, ColumnName, Value)
-                VALUES (?, ?, ?)
-            """, data)
+            print(f"\nCollecting data for param_id {param_id}:")
+            data, start_c_num = collect_data_for_param(param_id, new_id, cursor, start_c_num)
+            all_data.extend(data)
+        
+        print("\nInserting all collected data:")
+        cursor.executemany("""
+            INSERT INTO #TempHRData (Id, ColumnName, Value)
+            VALUES (?, ?, ?)
+        """, all_data)
         
         # Insert from temp table to main table
         cursor.execute("""
@@ -447,7 +459,6 @@ def batch_insert_with_temp_table(param_ids):
     finally:
         cursor.close()
         conn.close()
-
 
 
 #approach 2 with csv
@@ -620,7 +631,7 @@ def process_param_id(param_id, conn_str):
 
 #     return data
 
-def collect_data_for_param(param_id, cursor):
+def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     param_results, object_value_table = param_combi(param_id)
     object_values = get_object_values(param_results, object_value_table)
     
@@ -640,9 +651,7 @@ def collect_data_for_param(param_id, cursor):
     if start_time is None:
         start_time = datetime.now()
 
-    print(start_time)
     current_date, start_time_str = str(start_time).split()
-
     start_time_str = start_time_str.split('.')[0]
     original_time_obj = datetime.strptime(start_time_str, "%H:%M:%S")
     start_time_obj = original_time_obj.replace(minute=0, second=0, microsecond=0)
@@ -650,112 +659,45 @@ def collect_data_for_param(param_id, cursor):
     end_time_obj = start_time_obj + timedelta(hours=1)
     end_time_str = end_time_obj.strftime("%H:%M")
 
-    print(current_date, start_time_str, end_time_str)
-
     shift_name = get_shift_data(cursor, start_time_str)
-
-    cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
-    max_id = cursor.fetchone()[0]
-    new_id = (max_id or 0) + 1
 
     data = []
 
-    # Calculate the starting C-code based on param_id
-    # start_c_num = 1 + (param_id - 1) * 50
-    # end_c_num = start_c_num + 54  # Always 55 C-codes per param_id
-
-    # for i in range(start_c_num, end_c_num + 1):
-    #     c_code = f'C{i:03d}'
-    #     value = None
-
-    #     # Determine the relative position within the current set of 55 C-codes
-    #     relative_pos = (i - start_c_num) % 55
-
-    #     if relative_pos == 0:  # C001 or equivalent: Timestamp
-    #         value = f"{current_date} {start_time_str}:00"
-    #     elif relative_pos == 1:  # C002 or equivalent: Current Date
-    #         value = current_date
-    #     elif relative_pos == 2:  # C003 or equivalent: Current Time
-    #         value = start_time_str
-    #     elif relative_pos == 3:  # C004 or equivalent: End Time
-    #         value = end_time_str
-    #     elif relative_pos == 4:  # C005 or equivalent: Shift Name
-    #         value = shift_name
-    #     elif relative_pos == 5:  # C006 or equivalent: Default to '0'
-    #         value = '0'
-    #     elif relative_pos == 6:  # C007 or equivalent: Downtime
-    #         value = str(downtime) if downtime is not None else None
-    #     elif relative_pos == 7:  # C008 or equivalent: Product Type
-    #         value = str(product_type) if product_type is not None else None
-    #     elif relative_pos == 8:  # C009 or equivalent: Default to '0'
-    #         value = '0'
-    #     elif relative_pos == 9:  # C010 or equivalent: Product Count
-    #         value = str(product_count) if product_count is not None else None
-    #     elif relative_pos == 10:  # C011 or equivalent: Default to 'TPM'
-    #         value = 'TPM'
-    #     elif relative_pos == 11:  # C012 or equivalent: Default to '0'
-    #         value = '0'
-    #     elif relative_pos == 12:  # C013 or equivalent: Same as Downtime
-    #         value = str(downtime) if downtime is not None else None
-        
-    #     data.append((new_id, c_code, value))
-
-
-
-    start_c_num, end_c_num = cal_for_table(param_id)
-
-    start_c_num_int = int(start_c_num[1:])
-    end_c_num_int = int(end_c_num[1:])
-
-    for i in range(start_c_num_int, end_c_num_int + 1):
-        c_code = f'C{i:03d}'
+    for i in range(55):  # Always generate 55 values
+        c_code = f'C{start_c_num + i:03d}'
         value = None
 
-        # Determine the relative position within the current set of 55 C-codes
-        # relative_pos = i - int(start_c_num[1:])
-        relative_pos = i - start_c_num_int
-
-        if relative_pos < 13:  # Update the first 13 elements
-            if relative_pos == 0:  # C051 or equivalent: Timestamp
-                value = f"{start_time}"
-            elif relative_pos == 1:  # C052 or equivalent: Current Date
-                value = current_date
-            elif relative_pos == 2:  # C053 or equivalent: Current Time
-                value = start_time_str
-            elif relative_pos == 3:  # C054 or equivalent: End Time
-                value = end_time_str
-            elif relative_pos == 4:  # C055 or equivalent: Shift Name
-                value = shift_name
-            elif relative_pos == 5:  # C056 or equivalent: Default to '0'
-                value = '0'
-            elif relative_pos == 6:  # C057 or equivalent: Downtime
-                value = str(downtime) if downtime is not None else None
-            elif relative_pos == 7:  # C058 or equivalent: Product Type
-                value = str(product_type) if product_type is not None else None
-            elif relative_pos == 8:  # C059 or equivalent: Default to '0'
-                value = '0'
-            elif relative_pos == 9:  # C060 or equivalent: Product Count
-                value = str(product_count) if product_count is not None else None
-            elif relative_pos == 10:  # C061 or equivalent: Default to 'TPM'
-                value = 'TPM'
-            elif relative_pos == 11:  # C062 or equivalent: Default to '0'
-                value = '0'
-            elif relative_pos == 12:  # C063 or equivalent: Same as Downtime
-                value = str(downtime) if downtime is not None else None
-        else:
-            value = None
+        if i == 0:
+            value = f"{start_time}"
+        elif i == 1:
+            value = current_date
+        elif i == 2:
+            value = start_time_str
+        elif i == 3:
+            value = end_time_str
+        elif i == 4:
+            value = shift_name
+        elif i == 5:
+            value = '0'
+        elif i == 6:
+            value = str(downtime) if downtime is not None else None
+        elif i == 7:
+            value = str(product_type) if product_type is not None else None
+        elif i == 8:
+            value = '0'
+        elif i == 9:
+            value = str(product_count) if product_count is not None else None
+        elif i == 10:
+            value = 'TPM'
+        elif i == 11:
+            value = '0'
+        elif i == 12:
+            value = str(downtime) if downtime is not None else None
 
         data.append((new_id, c_code, value))
+        print(f"{c_code}: {value}")  # Print each C-code and its value
 
-
-
-
-
-    print(f"Data collected for param_id {param_id}:")
-    for row in data:
-        print(f"  {row[1]}: {row[2]}")
-
-    return data
+    return data, start_c_num + 55  # Return the next start_c_num
 
 
 
