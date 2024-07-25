@@ -621,32 +621,53 @@ def process_param_id(param_id, conn_str):
 #     return data
 
 def collect_data_for_param(param_id, cursor):
-    now = datetime.now()
-    current_date = now.strftime("%Y-%m-%d")
-    current_time = now.strftime("%H:%M")
-    
-    # Round down to the nearest hour for start time
-    start_time = now.replace(minute=0, second=0, microsecond=0)
-    # Set end time to the next hour
-    end_time = (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)).strftime("%H:%M")
-
     param_results, object_value_table = param_combi(param_id)
     object_values = get_object_values(param_results, object_value_table)
-
+    
     #c007 c008 c010
     # Initialize variables
     product_count = None
     product_type = None
     downtime = None
+    start_time = None
 
     # Assign values based on their position in the list
     if len(object_values) >= 3:
         product_count = object_values[0]['Value']
         product_type = object_values[1]['Value']
         downtime = object_values[2]['Value']
+        start_time = object_values[0]['TimeStamp']
+
+    if start_time is None:
+        # If no start_time was found, use current time as fallback
+        start_time = datetime.now()
+
+
+    print(start_time)
+    current_date, start_time_str = start_time.split()
+
+    # Remove the microseconds part if it exists
+    start_time_str = start_time_str.split('.')[0]
+
+
+    # Parse the original time
+    original_time_obj = datetime.strptime(start_time_str, "%H:%M:%S")
+
+    # Round down to the nearest hour
+    start_time_obj = original_time_obj.replace(minute=0, second=0, microsecond=0)
+    start_time_str = start_time_obj.strftime("%H:%M")
+
+    # Set end time to the next hour
+    end_time_obj = start_time_obj + timedelta(hours=1)
+    end_time_str = end_time_obj.strftime("%H:%M")
+
+    print(current_date, start_time_str, end_time_str)
+
+
+
 
     # Get shift data
-    shift_name = get_shift_data(cursor, now.strftime("%H:%M:%S"))
+    # shift_name = get_shift_data(cursor, now.strftime("%H:%M:%S"))
 
     cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
     max_id = cursor.fetchone()[0]
@@ -658,16 +679,17 @@ def collect_data_for_param(param_id, cursor):
         c_code = f'C{i:03d}'
         value = None
 
-        if i == 1:  # C001: Start Time
-            value = f"{current_date} {start_time.strftime('%H:%M')}:00"
+        if i == 1:  # C001: Timestamp
+            value = f"{start_time}"
         elif i == 2:  # C002: Current Date
             value = current_date
         elif i == 3:  # C003: Current Time
-            value = current_time
+            value = start_time_str
         elif i == 4:  # C004: End Time
-            value = end_time
+            value = end_time_str
         elif i == 5:  # C005: Shift Name
-            value = shift_name
+            # value = shift_name
+            value = "Incomp"
         elif i == 6:  # C006: Default to '0'
             value = '0'
         elif i == 7:  # C007: Downtime
