@@ -624,7 +624,6 @@ def collect_data_for_param(param_id, cursor):
     param_results, object_value_table = param_combi(param_id)
     object_values = get_object_values(param_results, object_value_table)
     
-    #c007 c008 c010
     # Initialize variables
     product_count = None
     product_type = None
@@ -639,35 +638,21 @@ def collect_data_for_param(param_id, cursor):
         start_time = object_values[0]['TimeStamp']
 
     if start_time is None:
-        # If no start_time was found, use current time as fallback
         start_time = datetime.now()
 
-
     print(start_time)
-    current_date, start_time_str = start_time.split()
+    current_date, start_time_str = str(start_time).split()
 
-    # Remove the microseconds part if it exists
     start_time_str = start_time_str.split('.')[0]
-
-
-    # Parse the original time
     original_time_obj = datetime.strptime(start_time_str, "%H:%M:%S")
-
-    # Round down to the nearest hour
     start_time_obj = original_time_obj.replace(minute=0, second=0, microsecond=0)
     start_time_str = start_time_obj.strftime("%H:%M")
-
-    # Set end time to the next hour
     end_time_obj = start_time_obj + timedelta(hours=1)
     end_time_str = end_time_obj.strftime("%H:%M")
 
     print(current_date, start_time_str, end_time_str)
 
-
-
-
-    # Get shift data
-    # shift_name = get_shift_data(cursor, now.strftime("%H:%M:%S"))
+    shift_name = get_shift_data(cursor, start_time_str)
 
     cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
     max_id = cursor.fetchone()[0]
@@ -675,36 +660,42 @@ def collect_data_for_param(param_id, cursor):
 
     data = []
 
-    for i in range(1, 56):  # Always start from C001 and go up to C055
+    # Calculate the starting C-code based on param_id
+    start_c_num = 1 + (param_id - 1) * 50
+    end_c_num = start_c_num + 54  # Always 55 C-codes per param_id
+
+    for i in range(start_c_num, end_c_num + 1):
         c_code = f'C{i:03d}'
         value = None
 
-        if i == 1:  # C001: Timestamp
-            value = f"{start_time}"
-        elif i == 2:  # C002: Current Date
+        # Determine the relative position within the current set of 55 C-codes
+        relative_pos = (i - start_c_num) % 55
+
+        if relative_pos == 0:  # C001 or equivalent: Timestamp
+            value = f"{current_date} {start_time_str}:00"
+        elif relative_pos == 1:  # C002 or equivalent: Current Date
             value = current_date
-        elif i == 3:  # C003: Current Time
+        elif relative_pos == 2:  # C003 or equivalent: Current Time
             value = start_time_str
-        elif i == 4:  # C004: End Time
+        elif relative_pos == 3:  # C004 or equivalent: End Time
             value = end_time_str
-        elif i == 5:  # C005: Shift Name
-            # value = shift_name
-            value = "Incomp"
-        elif i == 6:  # C006: Default to '0'
+        elif relative_pos == 4:  # C005 or equivalent: Shift Name
+            value = shift_name
+        elif relative_pos == 5:  # C006 or equivalent: Default to '0'
             value = '0'
-        elif i == 7:  # C007: Downtime
+        elif relative_pos == 6:  # C007 or equivalent: Downtime
             value = str(downtime) if downtime is not None else None
-        elif i == 8:  # C008: Product Type
+        elif relative_pos == 7:  # C008 or equivalent: Product Type
             value = str(product_type) if product_type is not None else None
-        elif i == 9:  # C009: Default to '0'
+        elif relative_pos == 8:  # C009 or equivalent: Default to '0'
             value = '0'
-        elif i == 10:  # C010: Product Count
+        elif relative_pos == 9:  # C010 or equivalent: Product Count
             value = str(product_count) if product_count is not None else None
-        elif i == 11:  # C011: Default to 'TPM'
+        elif relative_pos == 10:  # C011 or equivalent: Default to 'TPM'
             value = 'TPM'
-        elif i == 12:  # C012: Default to '0'
+        elif relative_pos == 11:  # C012 or equivalent: Default to '0'
             value = '0'
-        elif i == 13:  # C013: Same as Downtime
+        elif relative_pos == 12:  # C013 or equivalent: Same as Downtime
             value = str(downtime) if downtime is not None else None
         
         data.append((new_id, c_code, value))

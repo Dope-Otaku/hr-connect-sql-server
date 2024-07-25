@@ -288,7 +288,7 @@ def insert_or_update_data(paramID, object_values):
             print(f"Inserting new entry with Id: {new_id}")
 
             insert_data = [
-                ('C001', f"{current_date} {now.strftime('%H:%M')}:00"),
+                ('C001', f"{current_date} {now.strftime}('%H:%M'):00"),
                 ('C002', current_date),
                 ('C003', current_time),
                 ('C004', end_time),
