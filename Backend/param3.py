@@ -254,7 +254,7 @@ def print_range_with_values(start, end, object_values):
 def get_shift_data(cursor, current_time):
     query = """
     SELECT TOP 1 Value
-    FROM CT0013  -- Replace with your actual table name
+    FROM CT0013  
     WHERE ColumnName = 'C004_Shift'
       AND Id IN (
         SELECT Id
@@ -371,6 +371,46 @@ def insert_or_update_data(paramID, object_values):
 
 
 #approach 1 batch pushing
+# def batch_insert_with_temp_table(param_ids):
+#     conn = pyodbc.connect(conn_str)
+#     cursor = conn.cursor()
+    
+#     try:
+#         # Create a temporary table
+#         cursor.execute("""
+#             CREATE TABLE #TempHRData (
+#                 Id INT,
+#                 ColumnName VARCHAR(10),
+#                 Value VARCHAR(100)
+#             )
+#         """)
+        
+#         for param_id in param_ids:
+#             data = collect_data_for_param(param_id, cursor)
+            
+#             print(f"\nInserting data for param_id {param_id}:")
+#             for row in data:
+#                 print(f"  {row[1]}: {row[2]}")
+            
+#             cursor.executemany("""
+#                 INSERT INTO #TempHRData (Id, ColumnName, Value)
+#                 VALUES (?, ?, ?)
+#             """, data)
+        
+#         cursor.execute("""
+#             INSERT INTO GW_2_P10_HR_2024_old (Id, ColumnName, Value)
+#             SELECT * FROM #TempHRData
+#         """)
+        
+#         conn.commit()
+#         print("Batch insert completed successfully.")
+#     except Exception as e:
+#         conn.rollback()
+#         print(f"An error occurred during batch insert: {e}")
+#     finally:
+#         cursor.close()
+#         conn.close()
+
 def batch_insert_with_temp_table(param_ids):
     conn = pyodbc.connect(conn_str)
     cursor = conn.cursor()
@@ -388,15 +428,12 @@ def batch_insert_with_temp_table(param_ids):
         for param_id in param_ids:
             data = collect_data_for_param(param_id, cursor)
             
-            print(f"\nInserting data for param_id {param_id}:")
-            for row in data:
-                print(f"  {row[1]}: {row[2]}")
-            
             cursor.executemany("""
                 INSERT INTO #TempHRData (Id, ColumnName, Value)
                 VALUES (?, ?, ?)
             """, data)
         
+        # Insert from temp table to main table
         cursor.execute("""
             INSERT INTO GW_2_P10_HR_2024_old (Id, ColumnName, Value)
             SELECT * FROM #TempHRData
@@ -410,6 +447,7 @@ def batch_insert_with_temp_table(param_ids):
     finally:
         cursor.close()
         conn.close()
+
 
 
 #approach 2 with csv
@@ -533,15 +571,69 @@ def process_param_id(param_id, conn_str):
 
 #     return data
 
+# def collect_data_for_param(param_id, cursor):
+#     now = datetime.now()
+#     current_date = now.strftime("%Y-%m-%d")
+#     current_time = now.strftime("%H:%M")
+#     end_time = (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)).strftime("%H:%M")
+
+#     param_results, object_value_table = param_combi(param_id)
+#     object_values = get_object_values(param_results, object_value_table)
+
+#     # Initialize variables
+#     product_count = None
+#     product_type = None
+#     downtime = None
+
+#     # Assign values based on their position in the list
+#     if len(object_values) >= 3:
+#         product_count = object_values[0]['Value']
+#         product_type = object_values[1]['Value']
+#         downtime = object_values[2]['Value']
+
+#     # Print the values with their respective names
+#     print(f"Product Count: {product_count}")
+#     print(f"Product Type: {product_type}")
+#     print(f"Downtime: {downtime}")
+
+#     shift_name = get_shift_data(cursor, now.strftime("%H:%M"))
+
+#     cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
+#     max_id = cursor.fetchone()[0]
+#     new_id = (max_id or 0) + 1
+
+#     data = [
+#         (new_id, 'C001', f"{current_date} {now.strftime('%H:%M')}:00"),
+#         (new_id, 'C002', current_date),
+#         (new_id, 'C003', current_time),
+#         (new_id, 'C004', end_time),
+#         (new_id, 'C005', shift_name),
+#         (new_id, 'C006', '0'),
+#         (new_id, 'C007', str(downtime) if downtime is not None else None),
+#         (new_id, 'C008', str(product_type) if product_type is not None else None),
+#         (new_id, 'C009', '0'),
+#         (new_id, 'C010', str(product_count) if product_count is not None else None),
+#         (new_id, 'C011', 'TPM'),
+#         (new_id, 'C012', '0'),
+#         (new_id, 'C013', str(downtime) if downtime is not None else None)
+#     ]
+
+#     return data
+
 def collect_data_for_param(param_id, cursor):
     now = datetime.now()
     current_date = now.strftime("%Y-%m-%d")
     current_time = now.strftime("%H:%M")
+    
+    # Round down to the nearest hour for start time
+    start_time = now.replace(minute=0, second=0, microsecond=0)
+    # Set end time to the next hour
     end_time = (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)).strftime("%H:%M")
 
     param_results, object_value_table = param_combi(param_id)
     object_values = get_object_values(param_results, object_value_table)
 
+    #c007 c008 c010
     # Initialize variables
     product_count = None
     product_type = None
@@ -553,34 +645,57 @@ def collect_data_for_param(param_id, cursor):
         product_type = object_values[1]['Value']
         downtime = object_values[2]['Value']
 
-    # Print the values with their respective names
-    print(f"Product Count: {product_count}")
-    print(f"Product Type: {product_type}")
-    print(f"Downtime: {downtime}")
-
-    shift_name = get_shift_data(cursor, now.strftime("%H:%M"))
+    # Get shift data
+    shift_name = get_shift_data(cursor, now.strftime("%H:%M:%S"))
 
     cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
     max_id = cursor.fetchone()[0]
     new_id = (max_id or 0) + 1
 
-    data = [
-        (new_id, 'C001', f"{current_date} {now.strftime('%H:%M')}:00"),
-        (new_id, 'C002', current_date),
-        (new_id, 'C003', current_time),
-        (new_id, 'C004', end_time),
-        (new_id, 'C005', shift_name),
-        (new_id, 'C006', '0'),
-        (new_id, 'C007', str(downtime) if downtime is not None else None),
-        (new_id, 'C008', str(product_type) if product_type is not None else None),
-        (new_id, 'C009', '0'),
-        (new_id, 'C010', str(product_count) if product_count is not None else None),
-        (new_id, 'C011', 'TPM'),
-        (new_id, 'C012', '0'),
-        (new_id, 'C013', str(downtime) if downtime is not None else None)
-    ]
+    data = []
+
+    for i in range(1, 56):  # Always start from C001 and go up to C055
+        c_code = f'C{i:03d}'
+        value = None
+
+        if i == 1:  # C001: Start Time
+            value = f"{current_date} {start_time.strftime('%H:%M')}:00"
+        elif i == 2:  # C002: Current Date
+            value = current_date
+        elif i == 3:  # C003: Current Time
+            value = current_time
+        elif i == 4:  # C004: End Time
+            value = end_time
+        elif i == 5:  # C005: Shift Name
+            value = shift_name
+        elif i == 6:  # C006: Default to '0'
+            value = '0'
+        elif i == 7:  # C007: Downtime
+            value = str(downtime) if downtime is not None else None
+        elif i == 8:  # C008: Product Type
+            value = str(product_type) if product_type is not None else None
+        elif i == 9:  # C009: Default to '0'
+            value = '0'
+        elif i == 10:  # C010: Product Count
+            value = str(product_count) if product_count is not None else None
+        elif i == 11:  # C011: Default to 'TPM'
+            value = 'TPM'
+        elif i == 12:  # C012: Default to '0'
+            value = '0'
+        elif i == 13:  # C013: Same as Downtime
+            value = str(downtime) if downtime is not None else None
+        
+        data.append((new_id, c_code, value))
+
+    print(f"Data collected for param_id {param_id}:")
+    for row in data:
+        print(f"  {row[1]}: {row[2]}")
 
     return data
+
+
+
+
 
 if __name__ == "__main__":
     param_ids = range(1, 10)
