@@ -273,6 +273,42 @@ def get_shift_data(cursor, current_time):
     return result[0] if result else 'Unknown Shift'
 
 
+def cal_dur(start_time, end_time):
+    if start_time == 'N/A':
+        return "N/A"
+    
+    try:
+        start = datetime.strptime(start_time, "%H:%M")
+        end = datetime.strptime(end_time, "%H:%M") if end_time != 'N/A' else None
+        current = datetime.now()
+        
+        # Combine the times with today's date
+        start = datetime.combine(current.date(), start.time())
+        if end:
+            end = datetime.combine(current.date(), end.time())
+        
+        # If start time is in the future, assume it's from yesterday
+        if start > current:
+            start -= timedelta(days=1)
+        
+        # If end time is earlier than start time, assume it's for the next day
+        if end and end < start:
+            end += timedelta(days=1)
+        
+        # Calculate duration
+        if end and current >= end:
+            # Reset to 0 if current time is past end time
+            return 0
+        else:
+            duration = current - start
+            total_seconds = int(duration.total_seconds())
+            return min(total_seconds, 3600)  # Cap at 3600 seconds
+    except ValueError:
+        return 'Invalid time format'
+
+
+
+
 def insert_or_update_data(paramID, object_values):
     conn = pyodbc.connect(conn_str)
     cursor = conn.cursor()
@@ -307,6 +343,12 @@ def insert_or_update_data(paramID, object_values):
         product_count = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT'), None)
 
 
+        #get duration
+        duration = cal_dur(start_time_str, end_time_str)
+
+        #plan
+        cycle_time = 60
+        plan = (str(int(duration) // cycle_time))
         # Get dynamic shift data
         shift_name = get_shift_data(cursor, now.strftime("%H:%M"))
 
@@ -345,10 +387,10 @@ def insert_or_update_data(paramID, object_values):
                 ('C006', '0'),
                 ('C007', downtime),
                 ('C008', product_type),
-                ('C009', '0'),  # You might want to implement duration calculation
+                ('C009', duration),  # You might want to implement duration calculation
                 ('C010', product_count),
                 ('C011', 'TPM'),
-                ('C012', '0'),  # You might want to implement plan calculation
+                ('C012', plan),  # You might want to implement plan calculation
                 ('C013', downtime)
             ]
 
@@ -636,10 +678,8 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     object_values = get_object_values(param_results, object_value_table)
     
     # Initialize variables
-    product_count = None
-    product_type = None
-    downtime = None
-    start_time = None
+    product_count, product_type, downtime, start_time, duration, plan = None
+    
 
     # Assign values based on their position in the list
     if len(object_values) >= 3:
@@ -660,6 +700,10 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     end_time_str = end_time_obj.strftime("%H:%M")
 
     shift_name = get_shift_data(cursor, start_time_str)
+    duration = cal_dur(start_time_str, end_time_str)
+    cycle_time = 60
+    plan = (str(int(duration) // cycle_time))
+    print(f"{plan}:plan, {duration}:duration")
 
     data = []
 
@@ -684,13 +728,13 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
         elif i == 7:
             value = str(product_type) if product_type is not None else None
         elif i == 8:
-            value = '0'
+            value = f"{str(duration)} seconds" if downtime is not None else None
         elif i == 9:
             value = str(product_count) if product_count is not None else None
         elif i == 10:
             value = 'TPM'
         elif i == 11:
-            value = '0'
+            value = plan
         elif i == 12:
             value = str(downtime) if downtime is not None else None
 
