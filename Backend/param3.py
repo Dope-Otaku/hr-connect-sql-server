@@ -661,44 +661,95 @@ def collect_data_for_param(param_id, cursor):
     data = []
 
     # Calculate the starting C-code based on param_id
-    start_c_num = 1 + (param_id - 1) * 50
-    end_c_num = start_c_num + 54  # Always 55 C-codes per param_id
+    # start_c_num = 1 + (param_id - 1) * 50
+    # end_c_num = start_c_num + 54  # Always 55 C-codes per param_id
 
-    for i in range(start_c_num, end_c_num + 1):
+    # for i in range(start_c_num, end_c_num + 1):
+    #     c_code = f'C{i:03d}'
+    #     value = None
+
+    #     # Determine the relative position within the current set of 55 C-codes
+    #     relative_pos = (i - start_c_num) % 55
+
+    #     if relative_pos == 0:  # C001 or equivalent: Timestamp
+    #         value = f"{current_date} {start_time_str}:00"
+    #     elif relative_pos == 1:  # C002 or equivalent: Current Date
+    #         value = current_date
+    #     elif relative_pos == 2:  # C003 or equivalent: Current Time
+    #         value = start_time_str
+    #     elif relative_pos == 3:  # C004 or equivalent: End Time
+    #         value = end_time_str
+    #     elif relative_pos == 4:  # C005 or equivalent: Shift Name
+    #         value = shift_name
+    #     elif relative_pos == 5:  # C006 or equivalent: Default to '0'
+    #         value = '0'
+    #     elif relative_pos == 6:  # C007 or equivalent: Downtime
+    #         value = str(downtime) if downtime is not None else None
+    #     elif relative_pos == 7:  # C008 or equivalent: Product Type
+    #         value = str(product_type) if product_type is not None else None
+    #     elif relative_pos == 8:  # C009 or equivalent: Default to '0'
+    #         value = '0'
+    #     elif relative_pos == 9:  # C010 or equivalent: Product Count
+    #         value = str(product_count) if product_count is not None else None
+    #     elif relative_pos == 10:  # C011 or equivalent: Default to 'TPM'
+    #         value = 'TPM'
+    #     elif relative_pos == 11:  # C012 or equivalent: Default to '0'
+    #         value = '0'
+    #     elif relative_pos == 12:  # C013 or equivalent: Same as Downtime
+    #         value = str(downtime) if downtime is not None else None
+        
+    #     data.append((new_id, c_code, value))
+
+
+
+    start_c_num, end_c_num = cal_for_table(param_id)
+
+    start_c_num_int = int(start_c_num[1:])
+    end_c_num_int = int(end_c_num[1:])
+
+    for i in range(start_c_num_int, end_c_num_int + 1):
         c_code = f'C{i:03d}'
         value = None
 
         # Determine the relative position within the current set of 55 C-codes
-        relative_pos = (i - start_c_num) % 55
+        # relative_pos = i - int(start_c_num[1:])
+        relative_pos = i - start_c_num_int
 
-        if relative_pos == 0:  # C001 or equivalent: Timestamp
-            value = f"{current_date} {start_time_str}:00"
-        elif relative_pos == 1:  # C002 or equivalent: Current Date
-            value = current_date
-        elif relative_pos == 2:  # C003 or equivalent: Current Time
-            value = start_time_str
-        elif relative_pos == 3:  # C004 or equivalent: End Time
-            value = end_time_str
-        elif relative_pos == 4:  # C005 or equivalent: Shift Name
-            value = shift_name
-        elif relative_pos == 5:  # C006 or equivalent: Default to '0'
-            value = '0'
-        elif relative_pos == 6:  # C007 or equivalent: Downtime
-            value = str(downtime) if downtime is not None else None
-        elif relative_pos == 7:  # C008 or equivalent: Product Type
-            value = str(product_type) if product_type is not None else None
-        elif relative_pos == 8:  # C009 or equivalent: Default to '0'
-            value = '0'
-        elif relative_pos == 9:  # C010 or equivalent: Product Count
-            value = str(product_count) if product_count is not None else None
-        elif relative_pos == 10:  # C011 or equivalent: Default to 'TPM'
-            value = 'TPM'
-        elif relative_pos == 11:  # C012 or equivalent: Default to '0'
-            value = '0'
-        elif relative_pos == 12:  # C013 or equivalent: Same as Downtime
-            value = str(downtime) if downtime is not None else None
-        
+        if relative_pos < 13:  # Update the first 13 elements
+            if relative_pos == 0:  # C051 or equivalent: Timestamp
+                value = f"{start_time}"
+            elif relative_pos == 1:  # C052 or equivalent: Current Date
+                value = current_date
+            elif relative_pos == 2:  # C053 or equivalent: Current Time
+                value = start_time_str
+            elif relative_pos == 3:  # C054 or equivalent: End Time
+                value = end_time_str
+            elif relative_pos == 4:  # C055 or equivalent: Shift Name
+                value = shift_name
+            elif relative_pos == 5:  # C056 or equivalent: Default to '0'
+                value = '0'
+            elif relative_pos == 6:  # C057 or equivalent: Downtime
+                value = str(downtime) if downtime is not None else None
+            elif relative_pos == 7:  # C058 or equivalent: Product Type
+                value = str(product_type) if product_type is not None else None
+            elif relative_pos == 8:  # C059 or equivalent: Default to '0'
+                value = '0'
+            elif relative_pos == 9:  # C060 or equivalent: Product Count
+                value = str(product_count) if product_count is not None else None
+            elif relative_pos == 10:  # C061 or equivalent: Default to 'TPM'
+                value = 'TPM'
+            elif relative_pos == 11:  # C062 or equivalent: Default to '0'
+                value = '0'
+            elif relative_pos == 12:  # C063 or equivalent: Same as Downtime
+                value = str(downtime) if downtime is not None else None
+        else:
+            value = None
+
         data.append((new_id, c_code, value))
+
+
+
+
 
     print(f"Data collected for param_id {param_id}:")
     for row in data:
