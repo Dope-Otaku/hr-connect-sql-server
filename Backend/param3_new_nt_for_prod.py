@@ -154,8 +154,8 @@ def get_object_values(param_results, object_value_table):
                     'Value': row.Value,
                     'TimeStamp': row.TimeStamp
                 })
-                # print(f"Query result for {object_name} (UniqueID: {unique_id}):")
-                # print(f"  Value: {row.Value}, TimeStamp: {row.TimeStamp}, ParameterID: {row.ParameterID}")
+                print(f"Query result for {object_name} (UniqueID: {unique_id}):")
+                print(f"  Value: {row.Value}, TimeStamp: {row.TimeStamp}, ParameterID: {row.ParameterID}")
             else:
                 print(f"No data found for {object_name} (UniqueID: {unique_id})")
 
@@ -273,59 +273,42 @@ def get_shift_data(cursor, current_time):
     return result[0] if result else 'Unknown Shift'
 
 
-# def cal_dur(start_time, end_time):
-#     # print(f"cal_dur input - start_time: {start_time}, end_time: {end_time}")
-#     if start_time == 'N/A':
-#         return "N/A"
+def cal_dur(start_time, end_time):
+    print(f"cal_dur input - start_time: {start_time}, end_time: {end_time}")
+    if start_time == 'N/A':
+        return "N/A"
     
-#     try:
-#         start = datetime.strptime(start_time, "%H:%M")
-#         end = datetime.strptime(end_time, "%H:%M") if end_time != 'N/A' else None
-#         current = datetime.now()
-        
-#         # Combine the times with today's date
-#         start = datetime.combine(current.date(), start.time())
-#         if end:
-#             end = datetime.combine(current.date(), end.time())
-        
-#         # If start time is in the future, assume it's from yesterday
-#         if start > current:
-#             start -= timedelta(days=1)
-        
-#         # If end time is earlier than start time, assume it's for the next day
-#         if end and end < start:
-#             end += timedelta(days=1)
-        
-#         # Calculate duration
-#         if end and current >= end:
-#             print("Current time is past end time, returning 0")
-#             return 0
-#         else:
-#             duration = current - start
-#             total_seconds = int(duration.total_seconds())
-#             result = min(total_seconds, 3600)  # Cap at 3600 seconds
-#             print(f"Calculated duration: {result} seconds")
-#             return result
-#     except ValueError as e:
-#         print(f"Error in cal_dur: {e}")
-#         return 'Invalid time format'
-
-
-def cal_dur(current_time):
     try:
-        current = datetime.strptime(current_time, "%H:%M:%S")
-        start_of_hour = current.replace(minute=0, second=0, microsecond=0)
-        duration = (current - start_of_hour).total_seconds()
+        start = datetime.strptime(start_time, "%H:%M")
+        end = datetime.strptime(end_time, "%H:%M") if end_time != 'N/A' else None
+        current = datetime.now()
         
-        # print(f"cal_dur input: {current_time}")
-        # print(f"Parsed current time: {current}")
-        # print(f"Start of hour: {start_of_hour}")
-        # print(f"Calculated duration: {duration} seconds")
+        # Combine the times with today's date
+        start = datetime.combine(current.date(), start.time())
+        if end:
+            end = datetime.combine(current.date(), end.time())
         
-        return int(duration)
+        # If start time is in the future, assume it's from yesterday
+        if start > current:
+            start -= timedelta(days=1)
+        
+        # If end time is earlier than start time, assume it's for the next day
+        if end and end < start:
+            end += timedelta(days=1)
+        
+        # Calculate duration
+        if end and current >= end:
+            print("Current time is past end time, returning 0")
+            return 0
+        else:
+            duration = current - start
+            total_seconds = int(duration.total_seconds())
+            result = min(total_seconds, 3600)  # Cap at 3600 seconds
+            print(f"Calculated duration: {result} seconds")
+            return result
     except ValueError as e:
         print(f"Error in cal_dur: {e}")
-        return 0
+        return 'Invalid time format'
 
 
 
@@ -715,27 +698,17 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     current_date, start_time_str = str(start_time).split()
     start_time_str = start_time_str.split('.')[0]
     original_time_obj = datetime.strptime(start_time_str, "%H:%M:%S")
-    dur_time_obj = datetime.strptime(start_time_str, "%H:%M:%S")
-    # dur_time_str = dur_time_obj.replace(microsecond=0)
-    actual_dur = dur_time_obj.strftime("%H:%M:%S")
     start_time_obj = original_time_obj.replace(minute=0, second=0, microsecond=0)
     start_time_str = start_time_obj.strftime("%H:%M")
     end_time_obj = start_time_obj + timedelta(hours=1)
     end_time_str = end_time_obj.strftime("%H:%M")
 
     shift_name = get_shift_data(cursor, start_time_str)
-
-
+    
+    print(f"start_time_str: {start_time_str}, end_time_str: {end_time_str}")
+    duration = cal_dur(start_time_str, end_time_str)
+    print(f"Raw duration: {duration}")
     cycle_time = 60
-    # print(f"start_time_str: {start_time_str}, end_time_str: {end_time_str}")
-    # duration = cal_dur(start_time_str, end_time_str)
-    # print(f"original_time_obj:{original_time_obj}, start_time_obj:{start_time_obj}, start_time_str: {start_time_str}, actual_dur: {actual_dur}")
-   
-    # print(f"Raw start_time: {start_time}")
-    # print(f"Formatted start_time_str: {start_time_str}")
-
-    duration = cal_dur(actual_dur)
-    # print(f"Calculated duration: {duration}")
 
     if isinstance(duration, (int, float)):
         plan = str(int(duration) // cycle_time)
@@ -745,7 +718,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
         plan = '0'
         print(f"Duration is not a number: {duration}")
 
-    # print(f"Calculated plan: {plan}")
+    print(f"{plan}:plan, {duration}:duration")
 
     data = []
 
