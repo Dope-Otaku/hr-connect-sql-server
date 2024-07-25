@@ -678,7 +678,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     object_values = get_object_values(param_results, object_value_table)
     
     # Initialize variables
-    product_count, product_type, downtime, start_time, duration, plan = None
+    product_count = product_type = downtime = start_time = duration = plan = None
     
 
     # Assign values based on their position in the list
