@@ -706,7 +706,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     if len(object_values) >= 3:
         product_count = object_values[0]['Value'] #p_c should be stored with the diff of prev value
         product_type = object_values[1]['Value']
-        downtime = object_values[2]['Value'] #dowtime should be stored with the diff of prev value
+        downtime = object_values[2]['Value'] #dowtime should be stored with the diff of prev value star
         start_time = object_values[0]['TimeStamp']
 
     # only first five values column will be present in 1 pid rest all of them will start from plan_off
