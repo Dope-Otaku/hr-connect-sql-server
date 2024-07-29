@@ -710,13 +710,7 @@ def calculate_product_count(object_values):
 
     return temp_rem
 
-
-# Global variables to track product count
-pc = None
-cumulative_pc = 0 
-
 def collect_data_for_param(param_id, new_id, cursor, start_c_num):
-    global pc, cumulative_pc
     param_results, object_value_table = param_combi(param_id)
     object_values = get_object_values(param_results, object_value_table)
     
@@ -725,9 +719,9 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
 
     # Assign values based on their position in the list
     if len(object_values) >= 3:
-        product_count = object_values[0]['Value']
-        product_type = object_values[1]['Value']
-        downtime = object_values[2]['Value']
+        product_type = next((item['Value'] for item in object_values if item['Object'] == 'PRODUCT_TYPE'), None)
+        downtime = next((item['Value'] for item in object_values if item['Object'] == 'DOWNTIME'), None)
+        pc_values = object_values[0]['Value']
         start_time = object_values[0]['TimeStamp']
 
     if start_time is None:
@@ -749,17 +743,15 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     duration = cal_dur(actual_dur)
     plan = str(int(duration) // cycle_time) if isinstance(duration, (int, float)) else '0'
 
-     # Calculate product count difference
-    if product_count is not None:
-        if pc is None:
-            temp_pc = 0
-            pc = int(product_count)
-        else:
-            temp_pc = pc - int(product_count) 
-            cumulative_pc += temp_pc
-            pc = int(product_count)
-    else:
-        temp_pc = 0
+    #product count
+    if len(pc_values) >= 2:
+        for i in range(len(pc_values) - 1):
+            if pc_values[i] is not None and pc_values[i+1] is not None:
+                temp_pc = float(pc_values[i+1]) - float(pc_values[i])
+                temp_rem += temp_pc
+
+    # product_count = calculate_product_count(object_values)
+    product_count = temp_rem
     
 
     data = []
@@ -769,7 +761,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
         c_code = f'C{start_c_num + i:03d}'
         value = '0'  # Default value
 
-        if is_first_set or i >= 0:
+        if is_first_set or i >= 5:
             if i == 0 and is_first_set:
                 value = f"{start_time}"
             elif i == 1 and is_first_set:
@@ -789,9 +781,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
             elif i == 8:
                 value = f"{str(duration)} seconds" if duration is not None else '0'
             elif i == 9:
-                value = str(cumulative_pc) 
-                # value = str(product_count)
-
+                value = str(product_count)
             elif i == 10:
                 value = 'TPM'
             elif i == 11:

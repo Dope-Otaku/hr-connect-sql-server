@@ -267,3 +267,6 @@ def collect_data_for_param(param_id):
 
 
 
+
+
+why is my product count function not working it has a simple logic that is it will store the current_pc and will search for prev_pc make  difference between them and store the result in a new variable that will be displayed in product count value and also inserted there and when the next set of pid comes it will again do the calculation but this time it will add on to that neew variable and insert the data respectivbely in thi scode implement this and modify it and also print all the values from c001 to c055 and then also next 55 values for another set, even if it's empty just place a 0 their
