@@ -748,7 +748,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
     cycle_time = 60
     duration = cal_dur(actual_dur)
     plan = str(int(duration) // cycle_time) if isinstance(duration, (int, float)) else '0'
-
+    # print(prod)
      # Calculate product count difference
     if product_count is not None:
         if pc is None:
@@ -756,7 +756,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
             pc = int(product_count)
         else:
             temp_pc = pc - int(product_count) 
-            cumulative_pc += temp_pc
+            cumulative_pc += temp_pc # cumu = cumu + temp_pc
             pc = int(product_count)
     else:
         temp_pc = 0
@@ -807,7 +807,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
 
 
 if __name__ == "__main__":
-    param_ids = range(1, 10)
+    param_ids = range(1, 11)
 
    
     #currently this one works only the other two are not tested yet!
