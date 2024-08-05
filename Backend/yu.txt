@@ -265,7 +265,12 @@ def collect_data_for_param(param_id):
     # Return a list of tuples (Id, ColumnName, Value)
     pass
 
+ppt presentation-
+current update plus progreess till now, 
+from starting of the work till the end 
+code snippets of all thge functionalities, logic and ss of database tables after execution
 
+deadline till wednesday 7 aug!
 
 
 
