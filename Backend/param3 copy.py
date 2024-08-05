@@ -756,7 +756,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
             pc = int(product_count)
         else:
             temp_pc = pc - int(product_count) 
-            cumulative_pc += temp_pc # cumu = cumu + temp_pc
+            cumulative_pc += temp_pc # cumu = cumu + temp_pc so this will automatically count the pc
             pc = int(product_count)
     else:
         temp_pc = 0
