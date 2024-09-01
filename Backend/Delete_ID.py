@@ -22,9 +22,11 @@ conn_str = (
     f"DATABASE={config['database']};"
     f"UID={config['username']};"
     f"PWD={config['password']};"
-    "trusted_connection=yes"
+    "trusted_connection=yes"  #this should not be removed
 )
 
+
+#this code can delete id's between a range for example: 1 - 50, created this just to remove unwanted data  
 def delete_ids():
     conn = pyodbc.connect(conn_str)
     cursor = conn.cursor()
@@ -36,7 +38,7 @@ def delete_ids():
 
         # Delete the specified IDs
         for id in ids_to_delete:
-            cursor.execute("DELETE FROM GW_2_P10_HR_2024_old WHERE Id = ?", (id,))
+            cursor.execute("DELETE FROM GW_2_P10_HR_2024_old WHERE Id = ?", (id,)) #can change the table name
             print(f"Deleted entries with Id: {id}")
 
         # Commit the changes
@@ -51,5 +53,32 @@ def delete_ids():
         cursor.close()
         conn.close()
 
+#this code will delete the data of highest id available in the database
+def delete_last_entry():
+    conn = pyodbc.connect(conn_str)
+    cursor = conn.cursor()
+
+    try:
+        # Find the highest ID
+        cursor.execute("SELECT MAX(Id) FROM GW_2_P10_HR_2024_old")
+        max_id = cursor.fetchone()[0]
+
+        if max_id is not None:
+            # Delete all rows with the highest ID
+            cursor.execute("DELETE FROM GW_2_P10_HR_2024_old WHERE Id = ?", (max_id,))  #can change the table name
+            conn.commit()
+            print(f"Successfully deleted all entries with Id: {max_id}")
+        else:
+            print("No entries found in the table.")
+
+    except Exception as e:
+        conn.rollback()
+        print(f"An error occurred: {e}")
+
+    finally:
+        cursor.close()
+        conn.close()
+
 if __name__ == "__main__":
     delete_ids()
+    # delete_last_entry()  #only use if needed!

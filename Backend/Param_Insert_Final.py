@@ -79,53 +79,6 @@ def param_combi(paramID):
             conn.close()
 
 
-# def get_object_values(param_results, object_value_table):
-#     try:
-#         conn = pyodbc.connect(conn_str)
-#         cursor = conn.cursor()
-
-#         object_values = []
-
-#         for item in param_results:
-#             unique_id = item['UniqueID']
-#             object_name = item['Object']
-
-#             # SQL query to fetch the latest value for the given UniqueID
-#             query = f"""
-#             SELECT TOP 3 Value, TimeStamp, ParameterID
-#             FROM [{object_value_table}]
-#             WHERE ParameterID in (select uniqueId from maintaglist where parameterId = ?)
-#             ORDER BY TimeStamp DESC
-#             """
-            
-#             cursor.execute(query, (unique_id,))
-#             row = cursor.fetchone()
-
-#             if row:
-#                 object_values.append({
-#                     'ParameterID': unique_id,
-#                     'Object': object_name,
-#                     'Value': row.Value,
-#                     'TimeStamp': row.TimeStamp
-#                 })
-#             else:
-#                 object_values.append({
-#                     'UniqueID': unique_id,
-#                     'Object': object_name,
-#                     'Value': None,
-#                     'TimeStamp': None
-#                 })
-
-#         return object_values
-
-#     except Exception as e:
-#         print(f"An error occurred: {e}")
-#         return None
-
-#     finally:
-#         if conn:
-#             conn.close()
-
 def get_object_values(param_results, object_value_table):
     try:
         conn = pyodbc.connect(conn_str)
@@ -169,26 +122,6 @@ def get_object_values(param_results, object_value_table):
         if conn:
             conn.close()
 
-
-# def cal_for_table(paramId):
-#     #for parameter 1
-#     cons_start = 6   #these are yet to be  dynamic
-#     const_end = 55
-#     xp = 50   #these are yet to be  dynamic
-#     yp = (int(paramId) - 1)
-
-#     new_start = cons_start + (xp * yp)
-#     new_end = const_end + (xp * yp)
-
-#     # cons_end = new_start   #these are yet to be  dynamic
-#     # print(f"calculation: {new_start} to {const_end}")
-#     print(f"calculation: C00{new_start} to C0{new_end}")
-#     # print(f"calculation: {calculation}")
-
-#     #for parameter 2
-
-#     return (new_start)
-
 def cal_for_table(paramId):
     cons_start = 1
     const_end = 55
@@ -205,21 +138,6 @@ def cal_for_table(paramId):
 
     return (start_formatted, end_formatted)
 
-# def print_range_with_values(start, end, object_values):
-#     start_num = int(start[1:])
-#     end_num = int(end[1:])
-    
-#     for i in range(start_num, end_num + 1):
-#         formatted = f"C{i:03d}"
-        
-#         if i == start_num + 1:  # Second C-code (e.g., C007 for parameter 1)
-#             value = object_values[2]['Value'] if len(object_values) > 2 else None  # DOWNTIME
-#         elif i == start_num + 2:  # Third C-code (e.g., C008 for parameter 1)
-#             value = object_values[0]['Value'] if len(object_values) > 0 else None  # PRODUCT
-#         else:
-#             value = None
-        
-#         print(f"{formatted}: {value}")
 
 def print_range_with_values(start, end, object_values):
     # Always print C001 to C005 with None values
@@ -304,7 +222,7 @@ def cal_dur(start_time, end_time):
             duration = current - start
             total_seconds = int(duration.total_seconds())
             result = min(total_seconds, 3600)  # Cap at 3600 seconds
-            print(f"Calculated duration: {result} seconds")
+            print(f"Calculated duration: {result} ")
             return result
     except ValueError as e:
         print(f"Error in cal_dur: {e}")
@@ -743,7 +661,7 @@ def collect_data_for_param(param_id, new_id, cursor, start_c_num):
         elif i == 7:
             value = str(product_type) if product_type is not None else None
         elif i == 8:
-            value = f"{str(duration)} seconds" if downtime is not None else None
+            value = f"{str(duration)}" if downtime is not None else None
         elif i == 9:
             value = str(product_count) if product_count is not None else None
         elif i == 10:
