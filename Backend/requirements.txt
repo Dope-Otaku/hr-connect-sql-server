@@ -1,0 +1,17 @@
+# Flask==2.1.1  not necessary
+pyodbc==4.0.32
+python-dotenv==0.19.2
+
+
+# Here is the list of your modules with their version numbers:
+
+# Flask: 2.1.1
+# time: Built-in module (no version)
+# datetime: Built-in module (no version)
+# pyodbc: 4.0.32
+# os: Built-in module (no version)
+# dotenv: 0.19.2
+# csv: Built-in module (no version)
+# tempfile: Built-in module (no version)
+# multiprocessing: Built-in module (no version)
+# functools: Built-in module (no version)

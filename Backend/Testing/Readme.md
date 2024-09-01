@@ -1,26 +1,15 @@
-# HR Table Logic Implementation in a Microservice
+# Testing Folder
 
-This Repository Contains the logic implemented in the HR table in the HR Connect microservice.
+this is just folder where all the code files for testing lies
 
-## HR Table
+test_delete -> it is for deleting all the data from a table
+test_shift -> it is for inserting random values just to check whether the table has insert priviledges or not!
 
-Following are the tools we have used in our repository:
+## Running the Files
 
-- Microsoft SQL Server 20
-- Python 3.11
-- Visual Studio Code 2024
-- Git
+To run a file, simply execute the following command in the terminal:
 
-### Python Modules
+    ```
+    python <filename>.py || python3 <filename>.py `for mac and linux users`|| py <filename>.py
 
-Python modules we used are:
-
-- pyodbc
-- dotenv (import load_dotenv)
-- datetime (from datetime import datetime, timedelta)
-- os
-- time
-- csv
-- tempfile
-- multiprocessing
-- functools (from functools import partial)
+    ```

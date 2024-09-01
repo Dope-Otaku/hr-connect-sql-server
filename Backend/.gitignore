@@ -1,4 +1,7 @@
-# dependencies
+# env files
+#.env uncomment this when you fill your personal details in .env
 
+# text files not useful so ignore this!
 error.txt
 io.txt
+yu.txt

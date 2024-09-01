@@ -1,26 +1,12 @@
-# HR Table Logic Implementation in a Microservice
+# Waste Folder
 
-This Repository Contains the logic implemented in the HR table in the HR Connect microservice.
+this is just folder where all the buggy codes and currently not useful codes are kept
 
-## HR Table
+## Running the Files
 
-Following are the tools we have used in our repository:
+To run a file, simply execute the following command in the terminal:
 
-- Microsoft SQL Server 20
-- Python 3.11
-- Visual Studio Code 2024
-- Git
+    ```
+    python <filename>.py || python3 <filename>.py `for mac and linux users`|| py <filename>.py
 
-### Python Modules
-
-Python modules we used are:
-
-- pyodbc
-- dotenv (import load_dotenv)
-- datetime (from datetime import datetime, timedelta)
-- os
-- time
-- csv
-- tempfile
-- multiprocessing
-- functools (from functools import partial)
+    ```

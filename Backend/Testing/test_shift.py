@@ -6,6 +6,18 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+'''
+will generate a random number to fill all the c001, c002, ... etc
+and insert it into the database
+
+created this file just to check whether the table is accepting insert queries
+
+'''
+
+
+
 # Define the database configuration
 config = {
     'driver': os.getenv('DRIVER'),

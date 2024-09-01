@@ -10,6 +10,7 @@ The `shift` file is used for monitoring data in the terminal or console.
 
 To run a file, simply execute the following command in the terminal:
 
-    ```
-    python <filename>.py or python3 <filename>.py or py <filename>.py
-    ```
+```
+   python <filename>.py || python3 <filename>.py `for mac and linux users`|| py <filename>.py
+
+```

@@ -3,6 +3,16 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+'''
+to delete all the data from a table use this
+
+`use this in caution, will delete all the data from the database permanently`
+
+'''
+
+
+
 # Define the database configuration
 config = {
     'driver': os.getenv('DRIVER'),
