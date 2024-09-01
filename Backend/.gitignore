@@ -1,6 +1,4 @@
 # dependencies
-/node_modules
-/dump
-dummy.py
+
 error.txt
 io.txt

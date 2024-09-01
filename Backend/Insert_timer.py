@@ -1,9 +1,19 @@
 import pyodbc
 from datetime import datetime, timedelta
 import time
-
 import os
 from dotenv import load_dotenv
+
+
+'''
+this code is old version of inserion and only inserts 13 value at once and when the timer hits
+it again it again inserts it, --expired currently not in use but can be reffernce to other 
+logics
+
+'''
+
+
+
 
 load_dotenv()
 # Define the database configuration

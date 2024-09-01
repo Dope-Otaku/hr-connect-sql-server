@@ -17,7 +17,6 @@ config = {
     'port': os.getenv('PORT')
 }
 
-
 # Create a connection string
 conn_str = (
     f"DRIVER={config['driver']};"
@@ -34,39 +33,113 @@ def get_db_connection():
     conn = pyodbc.connect(conn_str)
     return conn
 
-def fetch_data(cursor, shift_start_time, shift_end_time):
-    query = f"""
-    SELECT *
-    FROM GW_2_P10_HR_2024
-    WHERE ColumnName IN ('C001', 'C002', 'C003', 'C004', 'C005')
-    AND Value BETWEEN '{shift_start_time}' AND '{shift_end_time}'
+# def fetch_latest_data(cursor):
+#     query = """
+#     SELECT TOP 1000 *
+#     FROM GW_2_P10_HR_2024_old
+#     WHERE Id = (SELECT MAX(Id) FROM GW_2_P10_HR_2024_old)
+#     ORDER BY ColumnName
+#     """
+#     # query = """
+#     # SELECT TOP 1000 *
+#     # FROM GW_2_P10_HR_2024_old
+#     # WHERE Id = (SELECT MAX(Id) FROM GW_2_P10_HR_2024_old)
+#     # ORDER BY ColumnName and order by id desc
+#     # """
+#     # WHERE Id = (SELECT MAX(Id) FROM GW_2_P10_HR_2024)
+
+#     cursor.execute(query)
+#     rows = cursor.fetchall()
+#     return rows
+
+def fetch_latest_data(cursor):
+    query = """
+    SELECT TOP 1000 Id, ColumnName, Value
+    FROM GW_2_P10_HR_2024_old
+    WHERE Id = (SELECT MAX(Id) FROM GW_2_P10_HR_2024_old)
+    ORDER BY ColumnName
     """
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows
+
+def calculate_product_count(rows):
+    temp_pc = 0
+    temp_rem = 0
+    column_indices = ['009', '059', '109', '159', '209', '259', '309', '359', '409', '459']
+    values = {}
+
+    for row in rows:
+        if row.ColumnName[1:] in column_indices:
+            values[row.ColumnName] = float(row.Value)
+
+    for i in range(len(column_indices) - 1):
+        current_col = f'C{column_indices[i]}'
+        next_col = f'C{column_indices[i+1]}'
+        if current_col in values and next_col in values:
+            temp_pc = values[next_col] - values[current_col]
+            temp_rem += temp_pc
+
+    return temp_rem
+
+def calculate_duration(start_time, end_time):
+    if start_time == 'N/A' or end_time == 'N/A':
+        return 'N/A'
+    try:
+        start = datetime.strptime(start_time, "%H:%M")
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        current = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
+        duration = current - start
+        total_seconds = int(duration.total_seconds())
+
+        if total_seconds <= 3600:
+            return total_seconds
+        else:
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            # return f"{seconds:02d} Seconds"
+    except ValueError:
+        return 'Invalid time format'
 
 def monitor_shifts():
     conn = get_db_connection()
     cursor = conn.cursor()
     
     while True:
-        now = datetime.now()
-        shift_start_time = now - timedelta(hours=1)
+        latest_data = fetch_latest_data(cursor)
         
-        logs = fetch_data(cursor, shift_start_time, now)
-        
-        shift_start = shift_start_time.strftime("%H:%M")
-        shift_end = now.strftime("%H:%M")
-        duration = now - shift_start_time
-        
-        print(f"Shift: Shift 1")
-        print(f"Start time: {shift_start}")
-        print(f"End time: {shift_end}")
-        print(f"Duration: {duration.total_seconds() / 3600:.2f} hrs")
-        print("Logs:")
-        for log in logs:
-            print(log)
-            print("it ")
+        if latest_data:
+            data_dict = {row.ColumnName: row.Value for row in latest_data}
+
+            # last_id = cursor.fetchone()[0]
+            # new_id = (last_id or 0) + 1
+            # id = data_dict.get('C001', 'N/A')
+
+            id = latest_data[0].Id if latest_data else 'N/A'
+            date = data_dict.get('C002', 'N/A')
+            start_time = data_dict.get('C003', 'N/A')
+            end_time = data_dict.get('C004', 'N/A')
+            shift = data_dict.get('C005', 'N/A')
+            product_count = calculate_product_count(latest_data)
+            # duration = calculate_duration(start_time, end_time)
+            duration = data_dict.get('C007', 'N/A')
+
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            print(f"Current Time: {current_time}")
+            print(f"Latest Data:")
+            print(f"ID: {id}")
+            # print(f"ID: {last_id}")
+            print(f"Date: {date}")
+            print(f"Start Time: {start_time}")
+            print(f"End Time: {end_time}")
+            print(f"Duration: {duration} Seconds!")
+            print(f"Shift: {shift}")
+            print(f"Product Count: {product_count}")
+            print("--------------------")
+        else:
+            print("No data found")
         
         time.sleep(5)
 

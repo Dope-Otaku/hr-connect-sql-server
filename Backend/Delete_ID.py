@@ -80,5 +80,6 @@ def delete_last_entry():
         conn.close()
 
 if __name__ == "__main__":
-    delete_ids()
-    # delete_last_entry()  #only use if needed!
+    # delete_ids()
+    delete_last_entry()  
+    #only use if needed!

@@ -6,6 +6,18 @@ import time
 # Load environment variables
 load_dotenv()
 
+
+
+'''
+
+this code prints out the parameterId of the object tables with their respected ids mentioned in
+the code
+
+'''
+
+
+
+
 # Database connection configuration
 config = {
     'driver': os.getenv('DRIVER'),
