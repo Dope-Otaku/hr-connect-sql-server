@@ -52,7 +52,16 @@ This repository contains code for all HR table calculations and their test code.
    export PASSWORD=your_password
    ```
 
-3. **Project Structure**:
+3. **Running The file**:
+
+   - To run a file, simply execute the following command in the terminal:
+
+   ```
+    python <filename>.py || python3 <filename>.py `for mac and linux users`|| py <filename>.py
+
+   ```
+
+4. **Project Structure**:
 
    - The root directory contains several files and folders. Here's an explanation of each:
 
