@@ -1,3 +1,3 @@
-### this repo is creted on hoe to connect a microsoft sql server with a react application and manipulate the data within it
+### HR TABLE LOGIC IMPLEMENTATION IN A MICROSERVICE
 
-## we will also create a project to improve the understanding of it!
+#This document describes the logic implemented in the HR table in the HR Connect microservice.
