@@ -1,6 +1,6 @@
 # HR Table Logic Implementation in a Microservice
 
-This document describes the logic implemented in the HR table in the HR Connect microservice.
+This Repository Contains the logic implemented in the HR table in the HR Connect microservice.
 
 ## HR Table
 
